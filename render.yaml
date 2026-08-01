@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: vantage-telemetry
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn vantage.api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: DATABASE_URL
+        value: sqlite:///data/observability.db

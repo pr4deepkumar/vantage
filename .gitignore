@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Databases & Local Data Directory
+data/*.db
+data/
+*.db
+*.sqlite
+*.sqlite3

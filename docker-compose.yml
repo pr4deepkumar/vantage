@@ -1,0 +1,14 @@
+services:
+  vantage:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vantage-console
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:////app/data/observability.db}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

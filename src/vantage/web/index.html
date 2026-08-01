@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VANTAGE Console | AI Telemetry & Observability</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Plotly JS for High-Performance Interactive Charts -->
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <!-- Custom Glassmorphic Dark Theme CSS -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>VANTAGE</h1>
+          <span>AI Telemetry & Observability</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="overview">
+          <i class="fa-solid fa-chart-line"></i> Performance Overview
+        </button>
+        <button class="nav-item" data-tab="sandbox">
+          <i class="fa-solid fa-flask-vial"></i> Live Sandbox
+        </button>
+        <button class="nav-item" data-tab="traces">
+          <i class="fa-solid fa-list-check"></i> Trace Explorer
+        </button>
+        <button class="nav-item" data-tab="drift">
+          <i class="fa-solid fa-triangle-exclamation"></i> Drift Audits
+        </button>
+        <button class="nav-item" data-tab="abtest">
+          <i class="fa-solid fa-vials"></i> Prompt A/B Testing
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-secondary btn-block" id="btn-simulate">
+          <i class="fa-solid fa-arrows-rotate"></i> Generate Mock Traces
+        </button>
+        <div class="status-indicator">
+          <span class="dot online"></span> API Server Connected
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Header Bar -->
+      <header class="top-header">
+        <div class="header-title">
+          <h2 id="page-title">Performance Overview</h2>
+          <p id="page-subtitle">Real-time metrics, cost distribution, and latency tracking</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-outline" id="btn-refresh">
+            <i class="fa-solid fa-rotate-right"></i> Refresh
+          </button>
+        </div>
+      </header>
+
+      <!-- Tab 1: Performance Overview -->
+      <section id="tab-overview" class="tab-content active">
+        <!-- KPI Cards Grid -->
+        <div class="metrics-grid">
+          <div class="custom-card">
+            <div class="card-title"><i class="fa-solid fa-microchip"></i> TOTAL TRACES</div>
+            <div class="card-value" id="kpi-traces">--</div>
+            <div class="card-desc">Recorded LLM executions</div>
+          </div>
+          <div class="custom-card">
+            <div class="card-title"><i class="fa-solid fa-dollar-sign"></i> TOTAL SPEND</div>
+            <div class="card-value" id="kpi-spend">--</div>
+            <div class="card-desc">USD calculated token cost</div>
+          </div>
+          <div class="custom-card">
+            <div class="card-title"><i class="fa-solid fa-clock"></i> AVG LATENCY</div>
+            <div class="card-value" id="kpi-latency">--</div>
+            <div class="card-desc">End-to-end execution time</div>
+          </div>
+          <div class="custom-card">
+            <div class="card-title"><i class="fa-solid fa-bolt"></i> AVG TTFT</div>
+            <div class="card-value" id="kpi-ttft">--</div>
+            <div class="card-desc">Time-to-First-Token</div>
+          </div>
+          <div class="custom-card">
+            <div class="card-title"><i class="fa-solid fa-circle-check"></i> SUCCESS RATE</div>
+            <div class="card-value" id="kpi-success">--</div>
+            <div class="card-desc">Pipeline health score</div>
+          </div>
+          <div class="custom-card">
+            <div class="card-title"><i class="fa-solid fa-star"></i> JUDGE SCORE</div>
+            <div class="card-value" id="kpi-judge">--</div>
+            <div class="card-desc">Automated quality grade (1-5)</div>
+          </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3><i class="fa-solid fa-chart-area"></i> Cost & Volume Trend</h3>
+            <div id="chart-spend-trend" class="plotly-container"></div>
+          </div>
+          <div class="chart-card">
+            <h3><i class="fa-solid fa-pie-chart"></i> Model Distribution</h3>
+            <div id="chart-models" class="plotly-container"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 2: Trace Explorer -->
+      <section id="tab-traces" class="tab-content">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <input type="text" id="trace-search" placeholder="Search prompts, outputs, or Trace IDs..." class="form-control">
+          </div>
+          <div class="filter-group">
+            <select id="filter-status" class="form-control">
+              <option value="all">All Statuses</option>
+              <option value="success">Success Only</option>
+              <option value="error">Errors Only</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <select id="filter-version" class="form-control">
+              <option value="all">All Prompt Versions</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table" id="traces-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Trace ID</th>
+                <th>Kind</th>
+                <th>Model / Version</th>
+                <th>Latency</th>
+                <th>Tokens (In/Out)</th>
+                <th>Cost ($)</th>
+                <th>Status</th>
+                <th>Feedback</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="traces-tbody">
+              <!-- Loaded via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Tab 3: Drift Audits -->
+      <section id="tab-drift" class="tab-content">
+        <div class="drift-header">
+          <div class="metrics-grid">
+            <div class="custom-card">
+              <div class="card-title"><i class="fa-solid fa-chart-line"></i> LATENCY PSI</div>
+              <div class="card-value" id="psi-latency">--</div>
+              <div class="card-desc">Population Stability Index</div>
+            </div>
+            <div class="custom-card">
+              <div class="card-title"><i class="fa-solid fa-coins"></i> COST PSI</div>
+              <div class="card-value" id="psi-cost">--</div>
+              <div class="card-desc">Cost Distribution Drift</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alerts-container">
+          <h3><i class="fa-solid fa-bell"></i> Detected Drift Alerts</h3>
+          <div id="drift-alerts-list">
+            <!-- Loaded via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 4: Prompt A/B Testing -->
+      <section id="tab-abtest" class="tab-content">
+        <div class="ab-grid" id="ab-cards-container">
+          <!-- Loaded via JS -->
+        </div>
+      </section>
+
+      <!-- Tab 5: Live Sandbox -->
+      <section id="tab-sandbox" class="tab-content">
+        <div class="sandbox-container">
+          <!-- Configurator Card -->
+          <div class="sandbox-card config-panel">
+            <div class="sandbox-header">
+              <div class="sandbox-title-area">
+                <h3><i class="fa-solid fa-flask-vial"></i> Interactive Pipeline Sandbox</h3>
+                <span class="badge-tag-free"><i class="fa-solid fa-gift"></i> $0 Cost Live Demo</span>
+              </div>
+              <p class="panel-subtitle">Execute multi-step agent pipelines, inspect span trees, and test automated judges with zero API fees.</p>
+            </div>
+
+            <!-- Mode Selector -->
+            <div class="sandbox-mode-selector">
+              <label class="mode-option active" id="mode-opt-simulated">
+                <input type="radio" name="sandbox-mode" value="simulated" checked>
+                <div class="mode-info">
+                  <span class="mode-title"><i class="fa-solid fa-bolt text-warning"></i> Simulated Mode ($0.00)</span>
+                  <span class="mode-desc">Sub-second mock execution with realistic span trees & local judge</span>
+                </div>
+              </label>
+              <label class="mode-option" id="mode-opt-live">
+                <input type="radio" name="sandbox-mode" value="live">
+                <div class="mode-info">
+                  <span class="mode-title"><i class="fa-solid fa-key text-primary"></i> Live Anthropic API</span>
+                  <span class="mode-desc">Executes real Claude-3.5-Sonnet calls using your Anthropic key</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- API Key Input (Hidden unless Live selected) -->
+            <div class="form-group" id="api-key-group" style="display: none;">
+              <label for="sandbox-api-key"><i class="fa-solid fa-lock"></i> Anthropic API Key</label>
+              <input type="password" id="sandbox-api-key" placeholder="sk-ant-api03-..." class="form-control">
+              <small class="form-help">Your key is never logged to disk; it is executed in-memory only.</small>
+            </div>
+
+            <!-- Presets Row -->
+            <div class="form-group">
+              <label><i class="fa-solid fa-wand-magic-sparkles"></i> Scenario Presets</label>
+              <div class="preset-chips">
+                <button type="button" class="chip active" data-preset="rag">
+                  <i class="fa-solid fa-brain"></i> RAG Agent Pipeline
+                </button>
+                <button type="button" class="chip" data-preset="hallucination">
+                  <i class="fa-solid fa-triangle-exclamation"></i> Hallucination Test
+                </button>
+                <button type="button" class="chip" data-preset="code">
+                  <i class="fa-solid fa-code"></i> Python Code Gen
+                </button>
+                <button type="button" class="chip" data-preset="support">
+                  <i class="fa-solid fa-headset"></i> Support Assistant
+                </button>
+              </div>
+            </div>
+
+            <!-- Prompt Input -->
+            <div class="form-group">
+              <label for="sandbox-prompt">Prompt / User Query</label>
+              <textarea id="sandbox-prompt" class="form-control textarea" rows="3" placeholder="Enter prompt to execute..."></textarea>
+            </div>
+
+            <!-- RAG Context Input -->
+            <div class="form-group" id="rag-context-group">
+              <label for="sandbox-rag">Retrieved Knowledge / RAG Context</label>
+              <textarea id="sandbox-rag" class="form-control textarea" rows="2" placeholder="Optional background context..."></textarea>
+            </div>
+
+            <!-- Model & Version Selection Grid -->
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="sandbox-model">Model</label>
+                <select id="sandbox-model" class="form-control">
+                  <option value="claude-3-5-sonnet-20241022">claude-3-5-sonnet-20241022</option>
+                  <option value="claude-3-5-haiku-20241022">claude-3-5-haiku-20241022</option>
+                  <option value="claude-3-opus-20240229">claude-3-opus-20240229</option>
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="sandbox-version">Prompt Version</label>
+                <select id="sandbox-version" class="form-control">
+                  <option value="v1.1.0">v1.1.0 (Production)</option>
+                  <option value="v1.0.0">v1.0.0 (Baseline)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Execute Button -->
+            <button class="btn btn-primary btn-block btn-lg" id="btn-run-sandbox">
+              <i class="fa-solid fa-play"></i> Execute Live Pipeline Trace
+            </button>
+          </div>
+
+          <!-- Execution Output / Live Stream Card -->
+          <div class="sandbox-card output-panel">
+            <div class="output-header">
+              <h3><i class="fa-solid fa-terminal"></i> Telemetry & Output Feed</h3>
+              <div class="output-status" id="sandbox-status">
+                <span class="dot ready"></span> Ready
+              </div>
+            </div>
+
+            <div class="output-content" id="sandbox-output-area">
+              <div class="empty-sandbox-state">
+                <i class="fa-solid fa-diagram-project fa-3x"></i>
+                <p>Select a preset or enter a prompt and click <strong>"Execute Live Pipeline Trace"</strong> to observe distributed spans, latency, and automated judge scoring in real-time.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Trace Detail Inspector Drawer -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <div class="drawer" id="trace-drawer">
+    <div class="drawer-header">
+      <h3><i class="fa-solid fa-rectangle-list"></i> Trace Detail & Span Tree</h3>
+      <button class="drawer-close" id="drawer-close">&times;</button>
+    </div>
+    <div class="drawer-body" id="drawer-content">
+      <!-- Loaded dynamically -->
+    </div>
+  </div>
+
+  <!-- App Script -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

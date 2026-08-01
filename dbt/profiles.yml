@@ -1,0 +1,19 @@
+# dbt profiles configuration for VANTAGE Telemetry
+# Supports both dbt-sqlite and dbt-duckdb adapters
+
+vantage_profile:
+  target: duckdb
+  outputs:
+    dev:
+      type: sqlite
+      schemas: ["main"]
+      database: "observability"
+      schema: "main"
+      db_path: "../data/observability.db"
+      threads: 1
+
+    duckdb:
+      type: duckdb
+      path: "../data/observability.db"
+      schema: "main"
+      threads: 4

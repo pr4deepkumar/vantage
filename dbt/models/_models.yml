@@ -1,0 +1,86 @@
+version: 2
+
+sources:
+  - name: main
+    schema: main
+    tables:
+      - name: traces
+        description: "Raw LLM telemetry trace logs and parent-child span execution records."
+
+models:
+  - name: stg_spans
+    description: "Staged and cleaned telemetry span records with calculated total tokens and normalized fields."
+    columns:
+      - name: span_id
+        description: "Unique 36-character UUID primary key for the span."
+        tests:
+          - unique
+          - not_null
+      - name: prompt_version
+        description: "Tagged prompt release identifier (e.g. v1.0.0, v2.1.0)."
+        tests:
+          - not_null
+      - name: span_kind
+        description: "Execution span type."
+        tests:
+          - accepted_values:
+              values:
+                - llm
+                - agent
+                - tool
+      - name: execution_status
+        description: "Status outcome of the span execution."
+        tests:
+          - accepted_values:
+              values:
+                - success
+                - error
+      - name: total_tokens
+        description: "Sum of input and output tokens consumed by the span."
+        tests:
+          - not_null
+
+  - name: fct_llm_traces
+    description: "Trace-level fact table aggregating child spans into complete parent execution summaries."
+    columns:
+      - name: trace_id
+        description: "Root trace UUID."
+        tests:
+          - unique
+          - not_null
+      - name: total_cost_usd
+        description: "Combined USD cost of all child LLM completions within the trace."
+        tests:
+          - not_null
+      - name: trace_latency_ms
+        description: "Total end-to-end execution time for the trace in milliseconds."
+        tests:
+          - not_null
+
+  - name: dim_prompt_performance
+    description: "Side-by-side prompt version A/B performance comparison mart."
+    columns:
+      - name: prompt_version
+        description: "Prompt version identifier being evaluated."
+        tests:
+          - not_null
+      - name: total_requests
+        description: "Total trace volume evaluated under this prompt version."
+        tests:
+          - not_null
+
+  - name: fct_drift_baselines
+    description: "Baseline statistical distributions (mean, min, max) for latency, cost, and token length."
+    columns:
+      - name: prompt_version
+        description: "Prompt version associated with the baseline window."
+        tests:
+          - not_null
+
+  - name: fct_daily_llm_spend
+    description: "Daily aggregated LLM token spend and model request volume rollups."
+    columns:
+      - name: date_day
+        description: "Calendar date of trace execution."
+        tests:
+          - not_null

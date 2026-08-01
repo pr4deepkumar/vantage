@@ -1,0 +1,5 @@
+aws_region        = "us-east-1"
+environment       = "prod"
+app_name          = "vantage"
+db_password       = "ChangeMeToSecurePassword123!"
+anthropic_api_key = "sk-ant-api-key-here"
