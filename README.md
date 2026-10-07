@@ -1,4 +1,4 @@
-# VANTAGE LLM Telemetry
+# VANTAGE LLM Telemetry & Observability Platform
 
 **VANTAGE LLM Telemetry** is a lightweight, production-grade observability and distributed tracing layer designed to log, evaluate, and monitor LLM API pipelines in real-time. Built with Python `contextvars`, SQLAlchemy, DuckDB/SQLite, and FastAPI with a Web Dashboard, it provides a developer-friendly console featuring distributed tracing, automated judge grading, operational drift alerts, side-by-side prompt version A/B testing, and an interactive **$0-cost live simulation sandbox**.
 
