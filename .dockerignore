@@ -1,0 +1,16 @@
+# The image only needs pyproject.toml, README.md and src/. Excluding the rest keeps the build
+# context small and keeps secrets such as .env and the local trace store out of it.
+.git
+.env
+.venv
+venv
+**/__pycache__
+**/*.py[cod]
+*.egg-info
+.pytest_cache
+.ruff_cache
+data
+dbt
+terraform
+tests
+screenshots

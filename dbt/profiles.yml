@@ -1,0 +1,16 @@
+# dbt profile for the VANTAGE analytics marts (pip install -e ".[dbt]", then run dbt from dbt/).
+# DuckDB reads the app's SQLite trace store through its sqlite extension, read-only, and writes the
+# marts to a separate DuckDB file, so dbt never writes into the database the app is using.
+
+vantage_profile:
+  target: duckdb
+  outputs:
+    duckdb:
+      type: duckdb
+      path: "../data/warehouse.duckdb"
+      attach:
+        - path: "../data/observability.db"
+          type: sqlite
+          alias: app
+          read_only: true
+      threads: 4

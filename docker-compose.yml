@@ -1,0 +1,15 @@
+services:
+  vantage:
+    build: .
+    container_name: vantage-console
+    ports:
+      - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - vantage-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  vantage-data:

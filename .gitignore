@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+
+# Environments and secrets
+.venv/
+venv/
+.env
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Databases & Local Data Directory
+data/*.db
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+
+# dbt
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml
+
+# Terraform state and variable files (they hold secrets)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example

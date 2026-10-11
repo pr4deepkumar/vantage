@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: vantage-telemetry
+    runtime: python
+    plan: free  # without this, Render provisions a paid instance
+    buildCommand: pip install ".[claude]"
+    startCommand: uvicorn vantage.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      # The free instance is too small for the local models, so the sandbox calls Claude instead.
+      - key: LLM_PROVIDER
+        value: claude
+      # sync: false makes the Blueprint deploy ask for it. Left empty, the console shows demo data only.
+      - key: ANTHROPIC_API_KEY
+        sync: false
